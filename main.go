@@ -59,24 +59,25 @@ func main() {
 
 	updates := bot.GetUpdatesChan(updateConfig)
 
-	// List of functions that will react and respond to certain user messages.
+	// List of functions that will react and respond to certain user messages. All messages should be lowercase.
 	handlers := make(map[string]cmdhandlers.CommandHandler)
 
-	handlers["Начать"] = cmdhandlers.Start
-	handlers["Информация"] = cmdhandlers.Info
-	handlers["Статистика"] = cmdhandlers.Stats
+	handlers["начать"] = cmdhandlers.Start
+	handlers["информация"] = cmdhandlers.Info
+	handlers["статистика"] = cmdhandlers.Stats
 
 	// Bot event loop.
 	for update := range updates {
 		if update.Message != nil {
 			payload := update.Message.Text
 			arguments := strings.Split(payload, " ")
-			command := arguments[0]
+
+			command := strings.ToLower(arguments[0])
 
 			if handlers[command] != nil {
 				go handlers[command](update, bot)
 			} else {
-				go handlers["Начать"](update, bot)
+				go handlers["начать"](update, bot)
 			}
 		}
 	}
