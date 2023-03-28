@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - PRODUCTION=true
+      - BOT_TOKEN=6069137427:AAHMt7luABqoXb9jL6wj8ApfVHnDTNByBs0
+
+      - DB_HOST=10.1.0.10
+      - DB_PORT=5432
+      - DB_USER=root
+      - DB_PASSWORD=dbpwdtggoweather8
+      - DB_NAME=tggoweatherbot
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      bot:
+        ipv4_address: 10.1.0.20
+
+  database:
+    image: "postgres:alpine"
+    environment:
+      POSTGRES_DB: "tggoweatherbot"
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "dbpwdtggoweather8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./dbinit.sql:/docker-entrypoint-initdb.d/dbinit.sql
+      - tggoweatherbot_database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d tggoweatherbot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      bot:
+        ipv4_address: 10.1.0.10
+
+networks:
+  bot:
+    driver: bridge
+
+    ipam:
+     config:
+       - subnet: 10.1.0.0/16
+         gateway: 10.1.0.1
+
+volumes:
+  tggoweatherbot_database:
+    driver: local
